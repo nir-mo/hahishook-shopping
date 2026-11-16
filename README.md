@@ -66,6 +66,15 @@ python3 scripts/add_to_cart.py 178225:2 259946:1
 
 Open the printed link in your browser (logged into the same account) and check out.
 
+**Read the cart** (review what's in it before paying):
+
+```bash
+python3 scripts/read_cart.py
+# 178225   x2   ₪14.40   אורז בסמטי
+# cart: 6 items, ₪40.00
+# pay here (same account): https://hahishook.com/cart/
+```
+
 ## As a Claude Code skill
 
 Install it into your skills directory, then invoke it from any session:

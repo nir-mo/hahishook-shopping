@@ -38,6 +38,13 @@ python3 scripts/add_to_cart.py <id>:<qty> [<id>:<qty> ...]
 Adds items to the user's **account** cart and prints the totals plus the
 `/cart/` link. Requires a valid `cookies.txt` (run `login.py` first).
 
+### Read the cart — reuses the saved session
+```
+python3 scripts/read_cart.py
+```
+Prints the current account cart (`<id><TAB>x<qty><TAB>₪<line><TAB><name>`) plus
+the total and the `/cart/` link, or `cart is empty`. Requires `cookies.txt`.
+
 ## Handoff
 
 Items go into the user's account cart. They open `https://hahishook.com/cart/`
@@ -53,7 +60,7 @@ List-as-data all week → materialize the cart once at the end:
 
 ## Extending
 
-Need an operation the scripts don't cover yet (read the cart, remove an item,
-pull the bulk price feed)? Add a script under `scripts/` — see `_http.py` for
+Need an operation the scripts don't cover yet (remove an item, or pull the
+bulk price feed)? Add a script under `scripts/` — see `_http.py` for
 the shared TLS + cookie helpers and the existing scripts for the request
 pattern. The endpoint knowledge lives in the code, not in this file.
