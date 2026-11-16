@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+# never commit secrets or session state
+.env
+cookies.txt
+secrets/
+list.json
