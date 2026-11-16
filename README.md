@@ -30,7 +30,7 @@ flowchart LR
     D --> E["💳 you pay"]
 ```
 
-The key idea: items are added to **your account's** cart. WooCommerce persists a logged-in cart server-side, so when you open `hahishook.com/cart/` in your own browser you see exactly what the agent assembled — the "link" is just `/cart/`, and **you** complete the payment. See [`SKILL.md`](SKILL.md) for the full endpoint map.
+The key idea: items are added to **your account's** cart. WooCommerce persists a logged-in cart server-side, so when you open `hahishook.com/cart/` in your own browser you see exactly what the agent assembled — the "link" is just `/cart/`, and **you** complete the payment. The request details live in [`scripts/`](scripts/).
 
 ## Requirements
 

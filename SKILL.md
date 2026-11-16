@@ -5,62 +5,55 @@ description: Build a weekly grocery cart on hahishook.com (Israeli nonprofit gro
 
 # Hahishook shopping
 
-hahishook.com (החישוק) is a nonprofit grocery store running on WooCommerce. Its
-WooCommerce **Store API** is public for reads, and the cart binds to a logged-in
-account — so the user pays from their own browser, and no payment is automated.
+hahishook.com (החישוק) is a nonprofit grocery store on WooCommerce. This skill
+searches products, logs in with the user's account, and builds a cart they pay
+for in their own browser. **Never automate payment.**
 
-## Endpoints (all verified against the live site)
+## The scripts are the interface
 
-### Search / resolve product IDs — no auth
-```
-GET /wp-json/wc/store/v1/products?search=<term>&per_page=20
-→ [{ id, name, prices:{ price, currency_minor_unit }, permalink }]
-```
-Prices are in **minor units** (agorot): shekels = `price / 10**currency_minor_unit`.
+Do everything through these scripts (run with `python3`) and read their
+plain-text output. They encode the details you'd otherwise get wrong by hand —
+TLS on the macOS python.org build, the login and cart nonces, cookie reuse, and
+minor-unit price math. Don't hand-roll HTTP.
 
-### Cart — Store API
+### Search — no login needed
 ```
-GET  /wp-json/wc/store/v1/cart           → response headers carry Cart-Token (JWT) + Nonce
-POST /wp-json/wc/store/v1/cart/add-item  body {"id":<id>,"quantity":<n>}
-     headers: Cart-Token + Nonce   (guest cart)
-     — OR send logged-in cookies   (binds cart to the account)  ← what we use
+python3 scripts/search.py "<hebrew term>" [per_page]
 ```
+One product per line: `<id><TAB>₪<price><TAB><name>`. Use `<id>` for the cart.
+A `₪0.00` price means a variable/unpurchasable product — skip it.
 
-### Login — standard WooCommerce form, NO captcha on the login form
+### Log in — saves the session to cookies.txt
 ```
-GET  /my-account/   → scrape `woocommerce-login-nonce` + session cookies
-POST /my-account/   fields:
-       username, password, rememberme=forever,
-       woocommerce-login-nonce=<nonce>, _wp_http_referer=/my-account/,
-       hh_login_method=password, login=Log in
-→ sets wordpress_logged_in_* cookies. Reuse that cookie jar on Store API calls
-  and the cart persists to the user's account.
+python3 scripts/login.py
 ```
-Login is fully scriptable (no captcha) → the EC2 agent re-logs-in whenever the
-cookie expires. Store credentials in a secret store, never in the repo.
+Prompts for credentials (no echo). For automation, set `HAHISHOOK_USER` /
+`HAHISHOOK_PASS` in the environment and it runs non-interactively. The saved
+session lasts ~14 days; re-run when it expires.
 
-### Daily price feed — official, owner-published
+### Add to cart — reuses the saved session
 ```
-GET /wp-content/uploads/chp/YYYYMMDD.tsv
-cols: 0 itemcode  1 price  2 disc_price  3 capacity  4 deeplink
-      5 short_name  6 units  8 image  9 leading_barcodes  10 similar_barcodes
+python3 scripts/add_to_cart.py <id>:<qty> [<id>:<qty> ...]
 ```
-Use for bulk prices / catalog. Only `leading_barcodes` set prices.
+Adds items to the user's **account** cart and prints the totals plus the
+`/cart/` link. Requires a valid `cookies.txt` (run `login.py` first).
 
-## Handoff model
-Build into the **account** cart (logged in). The user opens
-`https://hahishook.com/cart/` in their own browser (same account) → WooCommerce
-loads the persisted cart → they pay. The "link" is just `/cart/`.
-**Never automate payment.**
+## Handoff
+
+Items go into the user's account cart. They open `https://hahishook.com/cart/`
+in their own browser (same account) → WooCommerce loads the persisted cart →
+they pay. The "link" is just `/cart/`.
 
 ## Weekly flow
-List-as-data all week → materialize the cart once at the end:
-1. Agent searches and appends `{id, qty, name}` to `list.json` over the week.
-2. End-of-week: log in, add every item to the account cart.
-3. Notify the user: "cart ready → hahishook.com/cart/".
 
-## Scripts
-- `scripts/search.py <term> [per_page]` — product search (id / price / name), no auth.
-- `scripts/login.py` — log in (HAHISHOOK_USER / HAHISHOOK_PASS env vars), saves `cookies.txt`.
-- `scripts/add_to_cart.py <id>:<qty> ...` — add items to your account cart (reuses `cookies.txt`); prints the `/cart/` link.
-  _(coming: build_list.py — weekly list.json accumulation)_
+List-as-data all week → materialize the cart once at the end:
+1. Search and append `{id, qty, name}` to `list.json` over the week.
+2. End-of-week: run `login.py`, then `add_to_cart.py` for every item.
+3. Tell the user: "cart ready → hahishook.com/cart/".
+
+## Extending
+
+Need an operation the scripts don't cover yet (read the cart, remove an item,
+pull the bulk price feed)? Add a script under `scripts/` — see `_http.py` for
+the shared TLS + cookie helpers and the existing scripts for the request
+pattern. The endpoint knowledge lives in the code, not in this file.
