@@ -93,3 +93,17 @@ checkout); a day-to-day "remove" just edits `list.json`.
 Need an operation the scripts don't cover yet (e.g. pull the bulk price feed)? Add a script under `scripts/` — see `_http.py` for
 the shared TLS + cookie helpers and the existing scripts for the request
 pattern. The endpoint knowledge lives in the code, not in this file.
+
+## Running inside an ephemeral container (bots)
+
+When this skill runs inside a per-session agent container (e.g. a NanoClaw
+WhatsApp bot), `$HOME` is wiped between sessions — point `HAHISHOOK_HOME` at a
+**persisted mount** so the login session and lists survive:
+
+- NanoClaw: run every script with `HAHISHOOK_HOME=/workspace/agent/.hahishook`
+  (the group folder persists); the scripts live at
+  `/app/skills/hahishook-shopping/scripts/`.
+
+The saved session lasts ~14 days. When it expires, ask the operator for the
+credentials in chat, export them as `HAHISHOOK_USER` / `HAHISHOOK_PASS` for a
+single `login.py` run, and never write them to disk.
