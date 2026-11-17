@@ -6,11 +6,22 @@
   system default (e.g. on EC2 where system certs verify fine).
 - a cookie-jar-backed opener + load/save for the authenticated flows.
 """
+import os
 import ssl
 import http.cookiejar
 import urllib.request
 
 UA = "hahishook-skill/0.1"
+
+# All per-user state (cookies.txt, list.json, usuals.json) lives OUTSIDE the
+# skill directory so the skill itself stays pure code — reusable, updateable
+# via git pull, and shareable between users without mixing their sessions.
+DATA_DIR = os.environ.get("HAHISHOOK_HOME") or os.path.expanduser("~/.hahishook")
+
+
+def data_path(name):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    return os.path.join(DATA_DIR, name)
 
 
 def ssl_context():

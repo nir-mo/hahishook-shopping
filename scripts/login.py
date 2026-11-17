@@ -14,11 +14,11 @@ import sys
 import urllib.parse
 import urllib.request
 
-from _http import make_opener, load_jar, save_jar, UA
+from _http import make_opener, load_jar, save_jar, data_path, UA
 
 BASE = "https://hahishook.com"
 ACCOUNT = f"{BASE}/my-account/"
-COOKIES = os.path.join(os.path.dirname(__file__), os.pardir, "cookies.txt")
+COOKIES = data_path("cookies.txt")
 
 NONCE_INPUT = re.compile(r'<input[^>]*name="woocommerce-login-nonce"[^>]*>')
 VALUE = re.compile(r'value="([^"]+)"')
@@ -88,7 +88,7 @@ def main():
         sys.exit("login failed — no wordpress_logged_in cookie set (check credentials)")
 
     save_jar(jar)
-    print(f"logged in as {user}; session saved to {os.path.relpath(COOKIES)}")
+    print(f"logged in as {user}; session saved to {COOKIES}")
 
 
 if __name__ == "__main__":

@@ -75,6 +75,13 @@ python3 scripts/read_cart.py
 # pay here (same account): https://hahishook.com/cart/
 ```
 
+**Remove from the cart** (by product id):
+
+```bash
+python3 scripts/remove_item.py 259946
+# removed 259946
+```
+
 ## As a Claude Code skill
 
 Install it into your skills directory, then invoke it from any session:
@@ -89,7 +96,7 @@ ln -s "$PWD" ~/.claude/skills/hahishook-shopping
 
 ## Security
 
-- **`cookies.txt` is your authenticated session — treat it like a password.** It is git-ignored and never committed.
+- **Your authenticated session lives in `~/.hahishook/cookies.txt` — treat it like a password.** State never lives inside the repo/skill directory (override the location with `HAHISHOOK_HOME`).
 - Credentials are read from environment variables or an interactive prompt — never hardcoded, never written to disk, never logged.
 - On a server, inject credentials from a secret manager into the environment at runtime rather than storing them.
 

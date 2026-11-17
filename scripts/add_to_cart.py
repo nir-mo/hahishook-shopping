@@ -13,13 +13,13 @@ import json
 import urllib.request
 import urllib.error
 
-from _http import make_opener, load_jar, UA
+from _http import make_opener, load_jar, data_path, UA
 
 BASE = "https://hahishook.com/wp-json/wc/store/v1"
 CART = f"{BASE}/cart"
 ADD = f"{BASE}/cart/add-item"
 CART_URL = "https://hahishook.com/cart/"
-COOKIES = os.path.join(os.path.dirname(__file__), os.pardir, "cookies.txt")
+COOKIES = data_path("cookies.txt")
 
 
 def parse_items(args):

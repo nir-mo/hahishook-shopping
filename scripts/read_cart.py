@@ -12,11 +12,11 @@ import json
 import html
 import urllib.request
 
-from _http import make_opener, load_jar, UA
+from _http import make_opener, load_jar, data_path, UA
 
 CART = "https://hahishook.com/wp-json/wc/store/v1/cart"
 CART_URL = "https://hahishook.com/cart/"
-COOKIES = os.path.join(os.path.dirname(__file__), os.pardir, "cookies.txt")
+COOKIES = data_path("cookies.txt")
 
 
 def get_cart(opener):
